@@ -6,8 +6,7 @@ class StreakService extends ChangeNotifier {
   static const String _countKey = 'streak_count';
   static const String _lastDateKey = 'last_date';
 
-  static const String _androidWidgetName =
-      'StreakWidget'; // Must match widget provider in android
+  static const String _androidWidgetName = 'StreakWidgetProvider';
 
   int _count = 0;
   DateTime? _lastDate;
@@ -28,12 +27,12 @@ class StreakService extends ChangeNotifier {
       _lastDate = DateTime.parse(dateString);
     }
 
-    _checkStreakValidity();
+    await _checkStreakValidity();
     _isLoading = false;
     notifyListeners();
   }
 
-  void _checkStreakValidity() {
+  Future<void> _checkStreakValidity() async {
     if (_lastDate == null) return;
 
     final now = DateTime.now();
@@ -45,7 +44,8 @@ class StreakService extends ChangeNotifier {
     if (difference > 1) {
       // Missed a day, reset streak
       _count = 0;
-      _saveStreak();
+      await _saveStreak();
+      await updateWidget();
     }
   }
 
@@ -62,8 +62,11 @@ class StreakService extends ChangeNotifier {
 
     _count++;
     _lastDate = DateTime.now();
-    await _saveStreak();
+
+    // Notify listeners immediately to update the app UI
     notifyListeners();
+
+    await _saveStreak();
     await updateWidget();
   }
 
@@ -77,7 +80,17 @@ class StreakService extends ChangeNotifier {
 
   Future<void> updateWidget() async {
     try {
+      String state;
+      if (_count == 0) {
+        state = 'zero';
+      } else if (canTickToday) {
+        state = 'active';
+      } else {
+        state = 'completed';
+      }
+
       await HomeWidget.saveWidgetData<int>('streak_count', _count);
+      await HomeWidget.saveWidgetData<String>('streak_state', state);
       await HomeWidget.updateWidget(name: _androidWidgetName);
     } catch (e) {
       debugPrint("Error updating widget: $e");

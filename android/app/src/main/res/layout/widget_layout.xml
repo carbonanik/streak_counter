@@ -4,11 +4,18 @@
     android:layout_height="match_parent"
     android:padding="8dp">
 
+    <ImageView
+        android:id="@+id/widget_background_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:background="@drawable/widget_background"
+        android:clipToOutline="true" />
+
     <LinearLayout
         android:id="@+id/widget_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/widget_background"
         android:gravity="center"
         android:orientation="vertical">
 
@@ -21,7 +28,11 @@
             android:textColor="#FFFFFF"
             android:textSize="12sp"
             android:letterSpacing="0.2"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2" />
 
         <TextView
             android:id="@+id/streak_count"
@@ -30,8 +41,12 @@
             android:layout_height="wrap_content"
             android:text="0"
             android:textColor="#FFFFFF"
-            android:textSize="32sp"
-            android:textStyle="bold" />
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4" />
             
          <TextView
             android:id="@+id/widget_days_label"
@@ -41,6 +56,10 @@
             android:text="DAYS"
             android:textColor="#FFFFFF"
             android:textSize="10sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2" />
     </LinearLayout>
 </RelativeLayout>
