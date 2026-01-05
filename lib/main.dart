@@ -55,16 +55,20 @@ class StreakHomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  '${streakService.count}',
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                    fontSize: 120,
-                    fontWeight: FontWeight.w900,
-                    color: streakService.canTickToday
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context)
-                              .colorScheme
-                              .tertiary, // Change color if already ticked
+                GestureDetector(
+                  onLongPress: () =>
+                      _showEditStreakDialog(context, streakService),
+                  child: Text(
+                    '${streakService.count}',
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontSize: 120,
+                      fontWeight: FontWeight.w900,
+                      color: streakService.canTickToday
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context)
+                                .colorScheme
+                                .tertiary, // Change color if already ticked
+                    ),
                   ),
                 ),
                 Text(
@@ -104,6 +108,43 @@ class StreakHomePage extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showEditStreakDialog(
+    BuildContext context,
+    StreakService streakService,
+  ) {
+    final controller = TextEditingController(
+      text: streakService.count.toString(),
+    );
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Streak'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(labelText: 'New Streak Count'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () {
+              final newCount = int.tryParse(controller.text);
+              if (newCount != null) {
+                streakService.setManualStreak(newCount);
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('SAVE'),
+          ),
+        ],
       ),
     );
   }

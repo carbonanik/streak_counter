@@ -70,6 +70,16 @@ class StreakService extends ChangeNotifier {
     await updateWidget();
   }
 
+  Future<void> setManualStreak(int newCount) async {
+    _count = newCount;
+    // We don't change _lastDate here so the user can still tick today
+    // if they haven't already, or vice-versa.
+
+    notifyListeners();
+    await _saveStreak();
+    await updateWidget();
+  }
+
   Future<void> _saveStreak() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_countKey, _count);
