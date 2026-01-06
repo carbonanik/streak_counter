@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:home_widget/home_widget.dart';
@@ -15,21 +16,36 @@ class StreakService extends ChangeNotifier {
   int get count => _count;
   bool get isLoading => _isLoading;
 
+  final Completer<void> _loadCompleter = Completer<void>();
+  Future<void> get initializationDone => _loadCompleter.future;
+
   StreakService() {
     _loadStreak();
   }
 
   Future<void> _loadStreak() async {
-    final prefs = await SharedPreferences.getInstance();
-    _count = prefs.getInt(_countKey) ?? 0;
-    final dateString = prefs.getString(_lastDateKey);
-    if (dateString != null) {
-      _lastDate = DateTime.parse(dateString);
-    }
+    debugPrint("Loading streak...");
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _count = prefs.getInt(_countKey) ?? 0;
+      final dateString = prefs.getString(_lastDateKey);
+      if (dateString != null) {
+        _lastDate = DateTime.parse(dateString);
+      }
+      debugPrint("Streak data loaded: count=$_count, lastDate=$_lastDate");
 
-    await _checkStreakValidity();
-    _isLoading = false;
-    notifyListeners();
+      await _checkStreakValidity();
+      debugPrint("Streak validity checked.");
+    } catch (e) {
+      debugPrint("Error loading streak: $e");
+    } finally {
+      _isLoading = false;
+      if (!_loadCompleter.isCompleted) {
+        _loadCompleter.complete();
+      }
+      notifyListeners();
+      debugPrint("Streak loading complete.");
+    }
   }
 
   Future<void> _checkStreakValidity() async {
