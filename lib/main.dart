@@ -1,77 +1,47 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:workmanager/workmanager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'streak_service.dart';
 
-// Schedule daily updates
-void scheduleDailyWidgetUpdate() {
-  try {
-    Workmanager().registerPeriodicTask(
-      "widget_update",
-      "widgetBackgroundUpdate",
-      frequency: const Duration(hours: 24),
-      initialDelay: _calculateDelayUntilMidnight(),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy
-          .keep, // Prevent resetting the delay on every app start
-      constraints: Constraints(networkType: NetworkType.notRequired),
-    );
-
-    // Register a one-off task for immediate testing (fires in 5 seconds)
-    Workmanager().registerOneOffTask(
-      "test_immediate",
-      "widgetBackgroundUpdate", // Use the same task name
-      initialDelay: const Duration(seconds: 5),
-    );
-
-    debugPrint("Background tasks registered/checked.");
-  } catch (e) {
-    debugPrint("Failed to schedule background tasks: $e");
+Future<DateTime?> getLastUpdateDate() async {
+  final prefs = await SharedPreferences.getInstance();
+  final dateString = prefs.getString('last_app_start_check');
+  if (dateString != null) {
+    return DateTime.tryParse(dateString);
   }
+  return null;
 }
 
-Duration _calculateDelayUntilMidnight() {
-  final now = DateTime.now();
-  final tomorrow = DateTime(now.year, now.month, now.day + 1);
-  return tomorrow.difference(now);
+Future<void> saveLastUpdateDate(DateTime date) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('last_app_start_check', date.toIso8601String());
 }
 
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    // Ensure plugin services are available in the background isolate
-    WidgetsFlutterBinding.ensureInitialized();
+Future<void> updateWidget() async {
+  // Use the service to reuse logic
+  final service = StreakService();
+  await service.initializationDone;
+  await service.updateWidget();
+}
 
-    print("Workmanager callback called for task: $task");
-    try {
-      final service = StreakService();
-      await service.initializationDone;
-      await service.updateWidget();
-      print("Workmanager task '$task' completed successfully.");
-    } catch (e) {
-      print("Workmanager task '$task' failed: $e");
-    }
-    return Future.value(true);
-  });
+bool isSameDay(DateTime? a, DateTime b) {
+  if (a == null) return false;
+  return a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 void main() async {
   debugPrint("Starting main()");
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Workmanager
-  debugPrint("Initializing Workmanager...");
-  try {
-    await Workmanager().initialize(
-      callbackDispatcher,
-      isInDebugMode: kDebugMode,
-    );
-    debugPrint("Workmanager initialized.");
-  } catch (e) {
-    debugPrint("Workmanager initialization failed: $e");
+  // Check if day changed since last update
+  final lastUpdate = await getLastUpdateDate();
+  final today = DateTime.now();
+
+  if (lastUpdate == null || !isSameDay(lastUpdate, today)) {
+    await updateWidget();
+    await saveLastUpdateDate(today);
   }
 
-  scheduleDailyWidgetUpdate();
   debugPrint("Running app...");
   runApp(const MyApp());
 }
