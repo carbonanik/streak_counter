@@ -6,15 +6,18 @@ import 'package:home_widget/home_widget.dart';
 class StreakService extends ChangeNotifier {
   static const String _countKey = 'streak_count';
   static const String _lastDateKey = 'last_date';
+  static const String _taskRegisteredKey = 'task_registered';
 
   static const String _androidWidgetName = 'StreakWidgetProvider';
 
   int _count = 0;
   DateTime? _lastDate;
   bool _isLoading = true;
+  bool _isTaskRegistered = false;
 
   int get count => _count;
   bool get isLoading => _isLoading;
+  bool get isTaskRegistered => _isTaskRegistered;
 
   final Completer<void> _loadCompleter = Completer<void>();
   Future<void> get initializationDone => _loadCompleter.future;
@@ -28,11 +31,14 @@ class StreakService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _count = prefs.getInt(_countKey) ?? 0;
+      _isTaskRegistered = prefs.getBool(_taskRegisteredKey) ?? false;
       final dateString = prefs.getString(_lastDateKey);
       if (dateString != null) {
         _lastDate = DateTime.parse(dateString);
       }
-      debugPrint("Streak data loaded: count=$_count, lastDate=$_lastDate");
+      debugPrint(
+        "Streak data loaded: count=$_count, taskRegistered=$_isTaskRegistered, lastDate=$_lastDate",
+      );
 
       await _checkStreakValidity();
       debugPrint("Streak validity checked.");
@@ -121,5 +127,12 @@ class StreakService extends ChangeNotifier {
     } catch (e) {
       debugPrint("Error updating widget: $e");
     }
+  }
+
+  Future<void> setTaskRegistered(bool registered) async {
+    _isTaskRegistered = registered;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_taskRegisteredKey, registered);
+    notifyListeners();
   }
 }

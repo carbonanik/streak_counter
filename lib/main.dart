@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
 import 'streak_service.dart';
+
+const String _widgetUpdateTask = 'streak_widget_daily_update_task';
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    debugPrint("WorkManager executing task: $task");
+
+    if (task == _widgetUpdateTask) {
+      await updateWidget();
+    }
+
+    return Future.value(true);
+  });
+}
 
 Future<DateTime?> getLastUpdateDate() async {
   final prefs = await SharedPreferences.getInstance();
@@ -32,6 +48,8 @@ bool isSameDay(DateTime? a, DateTime b) {
 void main() async {
   debugPrint("Starting main()");
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Workmanager().initialize(callbackDispatcher);
 
   // Check if day changed since last update
   final lastUpdate = await getLastUpdateDate();
@@ -143,6 +161,29 @@ class StreakHomePage extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+                if (!streakService.isTaskRegistered)
+                  TextButton.icon(
+                    onPressed: () async {
+                      final now = DateTime.now();
+                      final nextMidnight = DateTime(
+                        now.year,
+                        now.month,
+                        now.day + 1,
+                      );
+                      final initialDelay = nextMidnight.difference(now);
+                      await Workmanager().registerPeriodicTask(
+                        _widgetUpdateTask,
+                        _widgetUpdateTask,
+                        initialDelay: initialDelay,
+                        frequency: const Duration(days: 1),
+                        existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+                      );
+                      await streakService.setTaskRegistered(true);
+                    },
+                    icon: const Icon(Icons.timer),
+                    label: const Text("12 AM UPDATE"),
+                  ),
               ],
             ),
           );

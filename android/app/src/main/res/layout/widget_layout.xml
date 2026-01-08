@@ -10,6 +10,7 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:background="@drawable/widget_background"
+        android:foreground="#80000000"
         android:clipToOutline="true" />
 
     <LinearLayout
@@ -25,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="STREAK"
-            android:textColor="#DD000000"
+            android:textColor="#FFFFFF"
             android:textSize="12sp"
             android:letterSpacing="0.2"
             android:textStyle="bold"
@@ -39,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0"
-            android:textColor="#DD000000"
+            android:textColor="#FFFFFF"
             android:textSize="48sp"
             android:textStyle="bold"
             android:shadowDx="2"
@@ -52,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="DAYS"
-            android:textColor="#DD000000"
+            android:textColor="#FFFFFF"
             android:textSize="10sp"
             android:textStyle="bold"
             android:shadowDx="1"
