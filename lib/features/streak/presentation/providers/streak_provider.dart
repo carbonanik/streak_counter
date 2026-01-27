@@ -88,4 +88,11 @@ class StreakProvider extends ChangeNotifier {
   Future<void> refreshWidget() async {
     await _repository.updateWidget(_streak);
   }
+
+  Future<void> updateWidgetTitle(String title) async {
+    _streak = _streak.copyWith(title: title);
+    notifyListeners();
+    await _repository.saveStreak(_streak);
+    await _repository.updateWidget(_streak);
+  }
 }

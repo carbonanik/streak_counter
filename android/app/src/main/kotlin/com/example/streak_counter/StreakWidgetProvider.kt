@@ -19,8 +19,10 @@ class StreakWidgetProvider : HomeWidgetProvider() {
                 val streak = widgetData.getInt("streak_count", 0)
                 val state = widgetData.getString("streak_state", "zero")
                 
+                val title = widgetData.getString("widget_title", "STREAK")
+                
                 setTextViewText(R.id.streak_count, streak.toString())
-                setTextViewText(R.id.widget_title, "STREAK")
+                setTextViewText(R.id.widget_title, title)
                 setTextViewText(R.id.widget_days_label, "DAYS")
                 
                 // Set background image based on state

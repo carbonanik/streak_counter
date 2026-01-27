@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
 import '../providers/streak_provider.dart';
+import 'settings_page.dart';
 
 class StreakHomePage extends StatelessWidget {
   const StreakHomePage({super.key});
@@ -12,6 +13,21 @@ class StreakHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Consumer<StreakProvider>(
         builder: (context, streakProvider, child) {
           if (streakProvider.isLoading) {
@@ -23,7 +39,7 @@ class StreakHomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'CURRENT STREAK',
+                  'CURRENT ${streakProvider.streak.title}',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     letterSpacing: 2.0,
                     fontWeight: FontWeight.bold,
